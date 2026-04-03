@@ -1,0 +1,305 @@
+{% liquid
+  assign brand_token = app.metafields.bottle_nexus.brand_token.value | default: ''
+  assign product_id = block.settings.product_id | strip
+  assign button_text = block.settings.button_text | default: 'Add to cart'
+  assign button_background = block.settings.button_background | default: '#27AE60'
+  assign button_text_color = block.settings.button_text_color | default: '#FFFFFF'
+  assign button_font_size = block.settings.button_font_size | default: 16
+  assign button_font_weight = block.settings.button_font_weight | default: '700'
+  assign button_radius = block.settings.button_radius | default: 5
+  assign button_width = block.settings.button_width | default: 250
+  assign button_alignment = block.settings.button_alignment | default: 'center'
+  assign show_input = block.settings.show_input
+  assign initial_quantity = block.settings.initial_quantity | default: 1
+  assign button_icon = block.settings.button_icon
+  assign icon_size = block.settings.icon_size | default: 18
+  assign icon_color = block.settings.icon_color | default: '#0B1F16'
+  assign enable_animation = block.settings.enable_animation
+  assign animation_preset = block.settings.animation_preset | default: 'none'
+  assign animation_start_text = block.settings.animation_start_text | default: 'Adding...'
+  assign animation_end_text = block.settings.animation_end_text | default: 'Added!'
+  assign animation_duration = block.settings.animation_duration | default: 500
+
+  if initial_quantity < 1
+    assign initial_quantity = 1
+  endif
+
+  case button_alignment
+    when 'left'
+      assign justify_content = 'flex-start'
+    when 'right'
+      assign justify_content = 'flex-end'
+    else
+      assign justify_content = 'center'
+  endcase
+
+  if button_icon != blank
+    assign button_icon_url = button_icon | image_url: width: 128
+  endif
+%}
+
+<div
+  class="bnx-add-to-cart-block"
+  style="
+    --bnx-button-width: {{ button_width }}px;
+    --bnx-button-radius: {{ button_radius }}px;
+    --bnx-button-bg: {{ button_background }};
+    --bnx-button-text: {{ button_text_color }};
+    --bnx-button-font-size: {{ button_font_size }}px;
+    --bnx-button-font-weight: {{ button_font_weight }};
+    --bnx-icon-size: {{ icon_size }}px;
+    --bnx-icon-color: {{ icon_color }};
+    --bnx-justify-content: {{ justify_content }};
+  "
+  {{ block.shopify_attributes }}
+>
+  {% if brand_token == blank or product_id == blank %}
+    {% if request.design_mode %}
+      <div class="bnx-add-to-cart-block__notice">
+        <strong>Bottle nexus buy button</strong><br>
+        {% if brand_token == blank %}
+          Save the Brand Token in the Bottle Nexus app settings before using this block.<br>
+        {% endif %}
+        {% if product_id == blank %}
+          Add the Product ID in this block to render the widget.
+        {% endif %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="bnx-add-to-cart-block__inner">
+      {% if show_input %}
+        <div class="bnx-add-to-cart-block__quantity" data-bnx-quantity-control>
+          <button
+            class="bnx-add-to-cart-block__step"
+            type="button"
+            aria-label="Decrease quantity"
+            data-bnx-qty-decrement
+          >
+            -
+          </button>
+          <input
+            class="bnx-add-to-cart-block__quantity-input"
+            type="number"
+            min="1"
+            step="1"
+            value="{{ initial_quantity }}"
+            inputmode="numeric"
+            aria-label="Quantity"
+            data-bnx-quantity-input
+          >
+          <button
+            class="bnx-add-to-cart-block__step"
+            type="button"
+            aria-label="Increase quantity"
+            data-bnx-qty-increment
+          >
+            +
+          </button>
+        </div>
+      {% endif %}
+
+      <button
+        class="bnx-add-to-cart-block__button"
+        type="button"
+        data-bnx-add-to-cart-button
+        data-token="{{ brand_token | escape }}"
+        data-product-id="{{ product_id | escape }}"
+        data-default-text="{{ button_text | escape }}"
+        data-enable-animation="{{ enable_animation }}"
+        data-animation-preset="{{ animation_preset | escape }}"
+        data-animation-start-text="{{ animation_start_text | escape }}"
+        data-animation-end-text="{{ animation_end_text | escape }}"
+        data-animation-duration="{{ animation_duration }}"
+      >
+        {% if button_icon_url %}
+          <span
+            class="bnx-add-to-cart-block__icon"
+            aria-hidden="true"
+            style="--bnx-icon-mask: url('{{ button_icon_url | escape }}');"
+          ></span>
+        {% endif %}
+        <span data-bnx-button-label>{{ button_text | escape }}</span>
+      </button>
+    </div>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "Bottle nexus buy button",
+  "target": "section",
+  "stylesheet": "bottle-nexus-buy-button.css",
+  "javascript": "bottle-nexus-buy-button.js",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "product_id",
+      "label": "Product ID",
+      "info": "Bottle Nexus product identifier to render in this widget."
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Add to cart"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_input",
+      "label": "Show quantity input",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "initial_quantity",
+      "label": "Initial quantity",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "button_width",
+      "label": "Button width",
+      "min": 120,
+      "max": 480,
+      "step": 5,
+      "default": 250,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Background color",
+      "default": "#27AE60"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "button_font_size",
+      "label": "Font size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "button_font_weight",
+      "label": "Font weight",
+      "default": "700",
+      "options": [
+        { "value": "400", "label": "Regular = 400" },
+        { "value": "500", "label": "Medium = 500" },
+        { "value": "600", "label": "Semi Bold = 600" },
+        { "value": "700", "label": "Bold = 700" },
+        { "value": "800", "label": "Extra Bold = 800" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 48,
+      "step": 1,
+      "default": 5,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "button_alignment",
+      "label": "Button alignment",
+      "default": "center",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Icon"
+    },
+    {
+      "type": "image_picker",
+      "id": "button_icon",
+      "label": "SVG icon",
+      "info": "Upload a monochrome SVG icon to tint it with the icon color."
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon color",
+      "default": "#0B1F16"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon size",
+      "min": 12,
+      "max": 40,
+      "step": 1,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_animation",
+      "label": "Enable Animation",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "animation_preset",
+      "label": "Animation preset",
+      "default": "none",
+      "options": [
+        { "value": "none", "label": "No animation" },
+        { "value": "bounce", "label": "Bounce" },
+        { "value": "shake", "label": "Shake" },
+        { "value": "zoom", "label": "Zoom in" },
+        { "value": "opacity", "label": "Opacity" }
+      ],
+      "visible_if": "{{ block.settings.enable_animation }}"
+    },
+    {
+      "type": "text",
+      "id": "animation_start_text",
+      "label": "Animation Start Text",
+      "default": "PACKING...",
+      "visible_if": "{{ block.settings.enable_animation }}"
+    },
+    {
+      "type": "text",
+      "id": "animation_end_text",
+      "label": "Animation End Text",
+      "default": "CHEERS!",
+      "visible_if": "{{ block.settings.enable_animation }}"
+    },
+    {
+      "type": "range",
+      "id": "animation_duration",
+      "label": "Animation Duration",
+      "min": 200,
+      "max": 2000,
+      "step": 100,
+      "default": 500,
+      "unit": "ms",
+      "visible_if": "{{ block.settings.enable_animation }}"
+    }
+  ]
+}
+{% endschema %}

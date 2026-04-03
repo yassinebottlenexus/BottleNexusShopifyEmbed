@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: bottle-nexus-buy-button
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: DATABASE_URL
+        value: file:/var/data/dev.sqlite
+      - key: SHOPIFY_APP_URL
+        sync: false
+      - key: SHOPIFY_API_KEY
+        sync: false
+      - key: SHOPIFY_API_SECRET
+        sync: false
+      - key: SCOPES
+        value: read_themes,write_themes
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
